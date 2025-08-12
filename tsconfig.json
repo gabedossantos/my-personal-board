@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "build",
+    "baseUrl": "../../"
+  },
+  "include": [".", ".next/types/**/*.ts"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/ai-prompts" },
+    { "path": "../../packages/components" },
+    { "path": "../../hooks" },
+    { "path": "../../lib" }
+  ]
+}
