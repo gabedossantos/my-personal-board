@@ -1,7 +1,15 @@
-import type { DomainArtifact } from "@gabe/types";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from '@prisma/client';
 
-// Local copy to avoid cross-project rootDir issues.
+// Local type mirror to avoid cross-project imports
+export type DomainArtifact = {
+  type: string;
+  chartType: string;
+  title: string;
+  description: string;
+  data: unknown;
+  config?: unknown;
+};
+
 export function toCreateArtifactInput(a: DomainArtifact) {
   return {
     artifactType: a.type,
