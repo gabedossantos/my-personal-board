@@ -1,6 +1,7 @@
 
 
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import ConversationDB from '@/lib/conversation-db';
 
 export const dynamic = "force-dynamic";
