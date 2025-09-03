@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node
 node_modules/
 npm-debug.log*
@@ -24,3 +25,23 @@ Thumbs.db
 
 # Test coverage
 coverage/
+=======
+# dependencies
+node_modules/
+
+# production
+.next/
+out/
+
+# logs
+npm-debug.log*
+
+# local env files
+.env*
+
+# OS & build artifacts
+.DS_Store
+*.tsbuildinfo
+prisma/*.db
+simulated_boardroom_plan.pdf
+>>>>>>> 9a3bd97 (Commit all recent changes)
