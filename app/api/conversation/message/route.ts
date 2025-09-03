@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+export const runtime = 'nodejs';
 import { BusinessStrategy } from '@/lib/types';
 import { generateConversationResponsePrompt, generateBoardMemberPrompt, generateDirectAddressingPrompt, shouldIntroduceAdvisors, detectArtifactOpportunity, detectDirectAdvisorAddressing, detectMultiAdvisorRequest, BOARD_PERSONAS } from '@/lib/board-prompts';
 import { generateText } from '@/lib/text-generation';
