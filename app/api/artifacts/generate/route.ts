@@ -1,5 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import ConversationDB from '@/lib/conversation-db';
 import { BusinessStrategy } from '@/lib/types';
 import { generateLocalJSON } from '@/lib/text-generation';
