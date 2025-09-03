@@ -1,19 +1,9 @@
-<<<<<<< HEAD
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { BusinessStrategy } from "@gabe/types";
-import { ConversationalBoardroom } from "@gabe/components";
-=======
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BusinessStrategy } from '@/lib/types';
 import ConversationalBoardroom from '@/components/conversational-boardroom';
->>>>>>> 9a3bd97 (Commit all recent changes)
 
 export default function SimulationPage() {
   const router = useRouter();
@@ -22,19 +12,11 @@ export default function SimulationPage() {
 
   useEffect(() => {
     // Get strategy from sessionStorage
-<<<<<<< HEAD
-    const strategyData = sessionStorage.getItem("businessStrategy");
-
-    if (!strategyData) {
-      // Redirect to strategy input if no data found
-      router.push("/strategy-input");
-=======
     const strategyData = sessionStorage.getItem('businessStrategy');
     
     if (!strategyData) {
       // Redirect to strategy input if no data found
       router.push('/strategy-input');
->>>>>>> 9a3bd97 (Commit all recent changes)
       return;
     }
 
@@ -42,13 +24,8 @@ export default function SimulationPage() {
       const parsedStrategy = JSON.parse(strategyData) as BusinessStrategy;
       setStrategy(parsedStrategy);
     } catch (error) {
-<<<<<<< HEAD
-      console.error("Error parsing strategy data:", error);
-      router.push("/strategy-input");
-=======
       console.error('Error parsing strategy data:', error);
       router.push('/strategy-input');
->>>>>>> 9a3bd97 (Commit all recent changes)
       return;
     } finally {
       setLoading(false);

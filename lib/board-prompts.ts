@@ -63,8 +63,14 @@ export function generateCFOGreetingPrompt(
   if (strategy.supplementaryFile) {
     if (strategy.supplementaryFile.type === 'pdf-base64') {
       strategyFields.push(`SUPPLEMENTARY MATERIALS: PDF document "${strategy.supplementaryFile.name}" attached for analysis`);
+      if (strategy.supplementaryFile.textExcerpt) {
+        const excerpt = strategy.supplementaryFile.textExcerpt.slice(0, 1200);
+        strategyFields.push(`EXCERPT FROM DOCUMENT:\n${excerpt}${strategy.supplementaryFile.textExcerpt.length > 1200 ? '... [truncated]' : ''}`);
+      }
     } else {
-      strategyFields.push(`SUPPLEMENTARY MATERIALS: ${strategy.supplementaryFile.content}`);
+      const text = (strategy.supplementaryFile.content || '').trim();
+      const excerpt = text.slice(0, 1200);
+      strategyFields.push(`SUPPLEMENTARY MATERIALS (excerpt): ${excerpt}${text.length > 1200 ? '... [truncated]' : ''}`);
     }
   }
   
@@ -118,8 +124,14 @@ export function generateBoardMemberPrompt(
   if (strategy.supplementaryFile) {
     if (strategy.supplementaryFile.type === 'pdf-base64') {
       strategyFields.push(`SUPPLEMENTARY MATERIALS: PDF document "${strategy.supplementaryFile.name}" attached for analysis`);
+      if (strategy.supplementaryFile.textExcerpt) {
+        const excerpt = strategy.supplementaryFile.textExcerpt.slice(0, 1200);
+        strategyFields.push(`EXCERPT FROM DOCUMENT:\n${excerpt}${strategy.supplementaryFile.textExcerpt.length > 1200 ? '... [truncated]' : ''}`);
+      }
     } else {
-      strategyFields.push(`SUPPLEMENTARY MATERIALS: ${strategy.supplementaryFile.content}`);
+      const text = (strategy.supplementaryFile.content || '').trim();
+      const excerpt = text.slice(0, 1200);
+      strategyFields.push(`SUPPLEMENTARY MATERIALS (excerpt): ${excerpt}${text.length > 1200 ? '... [truncated]' : ''}`);
     }
   }
 
@@ -169,8 +181,14 @@ export function generateConversationResponsePrompt(
   if (strategy.supplementaryFile) {
     if (strategy.supplementaryFile.type === 'pdf-base64') {
       strategyFields.push(`SUPPLEMENTARY MATERIALS: PDF document "${strategy.supplementaryFile.name}" attached for analysis`);
+      if (strategy.supplementaryFile.textExcerpt) {
+        const excerpt = strategy.supplementaryFile.textExcerpt.slice(0, 1200);
+        strategyFields.push(`EXCERPT FROM DOCUMENT:\n${excerpt}${strategy.supplementaryFile.textExcerpt.length > 1200 ? '... [truncated]' : ''}`);
+      }
     } else {
-      strategyFields.push(`SUPPLEMENTARY MATERIALS: ${strategy.supplementaryFile.content}`);
+      const text = (strategy.supplementaryFile.content || '').trim();
+      const excerpt = text.slice(0, 1200);
+      strategyFields.push(`SUPPLEMENTARY MATERIALS (excerpt): ${excerpt}${text.length > 1200 ? '... [truncated]' : ''}`);
     }
   }
   
@@ -264,8 +282,14 @@ export function generateDirectAddressingPrompt(
   if (strategy.supplementaryFile) {
     if (strategy.supplementaryFile.type === 'pdf-base64') {
       strategyFields.push(`SUPPLEMENTARY MATERIALS: PDF document "${strategy.supplementaryFile.name}" attached for analysis`);
+      if (strategy.supplementaryFile.textExcerpt) {
+        const excerpt = strategy.supplementaryFile.textExcerpt.slice(0, 1200);
+        strategyFields.push(`EXCERPT FROM DOCUMENT:\n${excerpt}${strategy.supplementaryFile.textExcerpt.length > 1200 ? '... [truncated]' : ''}`);
+      }
     } else {
-      strategyFields.push(`SUPPLEMENTARY MATERIALS: ${strategy.supplementaryFile.content}`);
+      const text = (strategy.supplementaryFile.content || '').trim();
+      const excerpt = text.slice(0, 1200);
+      strategyFields.push(`SUPPLEMENTARY MATERIALS (excerpt): ${excerpt}${text.length > 1200 ? '... [truncated]' : ''}`);
     }
   }
   

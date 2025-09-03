@@ -22,6 +22,7 @@ import {
   Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,26 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
   const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const proceedToSummary = async () => {
+    try {
+      // Persist the latest conversation snapshot for the Summary page
+      if (conversation) {
+        sessionStorage.setItem('conversationSession', JSON.stringify(conversation));
+      }
+      // Mark conversation as completed (best-effort)
+      if (conversation?.sessionId) {
+        fetch(`/api/conversation/${conversation.sessionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'completed', phase: 'completed' })
+        }).catch(() => {});
+      }
+      router.push('/summary');
+    } catch (e) {
+      router.push('/summary');
+    }
+  };
 
   useEffect(() => {
     if (initialConversation) {
@@ -172,6 +193,19 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
     }
   };
 
+  // Lightweight stats refresh without reloading entire conversation
+  const refreshStats = async () => {
+    try {
+      const res = await fetch(`/api/conversation/${sessionId}/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setStats(data.stats);
+      }
+    } catch (e) {
+      console.error('Error refreshing stats:', e);
+    }
+  };
+
   const onAttachFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!conversation || !e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -258,6 +292,8 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
               
               // Reload conversation to get the complete saved message
               await loadConversation();
+              // And update stats lightweight
+              await refreshStats();
               return;
             }
 
@@ -437,6 +473,42 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
               </CardContent>
             </Card>
 
+            {/* Attached File */}
+            {conversation.strategy?.supplementaryFile && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-emerald-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 7V17C8 18.657 9.343 20 11 20C12.657 20 14 18.657 14 17V6C14 4.343 12.657 3 11 3C9.343 3 8 4.343 8 6V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    Attached File
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-700">
+                    <p className="font-medium break-words">{conversation.strategy.supplementaryFile.name}</p>
+                    <p className="text-xs text-gray-500 mb-3">Type: {conversation.strategy.supplementaryFile.type}</p>
+                    {conversation.strategy.supplementaryFile.type === 'pdf-base64' ? (
+                      <div className="text-xs text-gray-600">
+                        <p className="mb-2">PDF attached. Advisors will reference it when relevant.</p>
+                        {conversation.strategy.supplementaryFile.textExcerpt && (
+                          <div className="bg-gray-50 border rounded p-2 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                            {conversation.strategy.supplementaryFile.textExcerpt.slice(0, 500)}
+                            {conversation.strategy.supplementaryFile.textExcerpt.length > 500 ? '…' : ''}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-600 bg-gray-50 border rounded p-2 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                        {conversation.strategy.supplementaryFile.content?.slice(0, 500)}
+                        {conversation.strategy.supplementaryFile.content && conversation.strategy.supplementaryFile.content.length > 500 ? '…' : ''}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Conversation URL Share */}
             <Card className="mt-4">
               <CardHeader>
@@ -513,6 +585,22 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
                                     <Badge variant="outline" className="text-[10px]">
                                       {message.providerUsed === 'openai' ? 'OpenAI' : 'Local'}
                                     </Badge>
+                                  )}
+                                  {message as any && (message as any).tokens && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Badge variant="outline" className="text-[10px] cursor-help"># tokens</Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <div className="text-xs">
+                                            <div>Input: {(message as any).tokens.input}</div>
+                                            <div>Output: {(message as any).tokens.output}</div>
+                                            <div>Total: {(message as any).tokens.total}</div>
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   )}
                                 </div>
                               </div>
@@ -594,6 +682,12 @@ export default function ConversationPage({ sessionId, initialConversation }: Con
                       )}
                       </Button>
                     </div>
+                  </div>
+                  <div className="flex justify-end mt-3">
+                    <Button variant="outline" onClick={proceedToSummary}>
+                      End Session & View Summary
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>

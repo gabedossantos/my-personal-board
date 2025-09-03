@@ -1,20 +1,4 @@
 {
-<<<<<<< HEAD
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "outDir": "build",
-    "baseUrl": "../../"
-  },
-  "include": [".", ".next/types/**/*.ts"],
-  "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/utils" },
-    { "path": "../../packages/ai-prompts" },
-    { "path": "../../packages/components" },
-    { "path": "../../hooks" },
-    { "path": "../../lib" }
-=======
   "compilerOptions": {
     "target": "es2020",
     "lib": [
@@ -47,13 +31,23 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "prisma/**/*.{ts,tsx}",
+  "types/**/*.d.ts",
     ".next/types/**/*.ts",
     ".build/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
->>>>>>> 9a3bd97 (Commit all recent changes)
+    "node_modules",
+    "[sessionId]",
+    "api",
+    "simulation",
+    "summary",
+    "scripts",
+    "dist",
+    "build"
   ]
 }

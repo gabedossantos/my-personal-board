@@ -10,6 +10,7 @@ import { Send, Users, Loader2, ArrowRight, Sparkles, TrendingUp, Link, Copy, Bar
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import ArtifactDisplay from '@/components/charts/artifact-display';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ConversationalBoardroomProps {
   strategy: BusinessStrategy;
@@ -138,6 +139,8 @@ export default function ConversationalBoardroom({ strategy }: ConversationalBoar
               if (data === '[DONE]') {
                 // Refresh conversation from database to get updated messages
                 await refreshConversation();
+                // Lightweight stats update
+                await refreshStats();
                 setStreamingMessage('');
                 setIsResponding(false);
                 setCurrentRespondingMember(null);
@@ -215,6 +218,20 @@ export default function ConversationalBoardroom({ strategy }: ConversationalBoar
       }
     } catch (error) {
       console.error('Error checking for artifacts:', error);
+    }
+  };
+
+  // Lightweight stats refresh without reloading the whole conversation
+  const refreshStats = async () => {
+    if (!conversation?.sessionId) return;
+    try {
+      const response = await fetch(`/api/conversation/${conversation.sessionId}/stats`, { method: 'GET' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) setStats(data.stats);
+      }
+    } catch (err) {
+      console.error('Error refreshing stats:', err);
     }
   };
 
@@ -463,7 +480,7 @@ export default function ConversationalBoardroom({ strategy }: ConversationalBoar
                             />
                           )}
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-semibold text-sm">{message.name}</p>
                           <p className="text-xs text-gray-500">{message.title}</p>
                           {message.persona && (
@@ -472,6 +489,22 @@ export default function ConversationalBoardroom({ strategy }: ConversationalBoar
                             </p>
                           )}
                         </div>
+                        {(message as any)?.tokens && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-[10px] border rounded px-2 py-1 text-gray-600 cursor-help"># tokens</span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="text-xs">
+                                  <div>Input: {(message as any).tokens.input}</div>
+                                  <div>Output: {(message as any).tokens.output}</div>
+                                  <div>Total: {(message as any).tokens.total}</div>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </div>
                     )}
                     {message.type === 'artifact_generated' && (
@@ -511,6 +544,16 @@ export default function ConversationalBoardroom({ strategy }: ConversationalBoar
                   </div>
                   <div>
                     <p className="font-semibold text-sm">{BOARD_PERSONAS[currentRespondingMember].name}</p>
+                  {/* Attached File Preview (if PDF excerpt available) */}
+                  {conversation.strategy?.supplementaryFile?.type === 'pdf-base64' && conversation.strategy?.supplementaryFile?.textExcerpt && (
+                    <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-2">Using excerpt from {conversation.strategy.supplementaryFile.name}</h3>
+                      <p className="text-xs text-gray-600 whitespace-pre-wrap">
+                        {conversation.strategy.supplementaryFile.textExcerpt.slice(0, 500)}{conversation.strategy.supplementaryFile.textExcerpt.length > 500 ? '…' : ''}
+                      </p>
+                    </div>
+                  )}
+
                     <p className="text-xs text-gray-500">{BOARD_PERSONAS[currentRespondingMember].title}</p>
                     <p className="text-xs text-gray-400">
                       {BOARD_PERSONAS[currentRespondingMember].animalSpirit}

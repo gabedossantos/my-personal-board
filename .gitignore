@@ -1,47 +1,27 @@
-<<<<<<< HEAD
-# Node
+# dependencies
 node_modules/
+
+# production/build
+.next/
+out/
+build/
+dist/
+
+# logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
 
-# Next.js
-.next/
-out/
-build/
-
-# Env files
+# local env files
 .env
 .env.*
 !.env.example
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Test coverage
-coverage/
-=======
-# dependencies
-node_modules/
-
-# production
-.next/
-out/
-
-# logs
-npm-debug.log*
-
-# local env files
-.env*
 
 # OS & build artifacts
 .DS_Store
 *.tsbuildinfo
 prisma/*.db
 simulated_boardroom_plan.pdf
->>>>>>> 9a3bd97 (Commit all recent changes)
+coverage/

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ConversationDB from '@/lib/conversation-db';
 import { processFile } from '@/lib/file-processor';
+import { extractPdfTextFromBase64 } from '@/lib/pdf-utils';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(
   request: NextRequest,
@@ -36,10 +38,26 @@ export async function POST(
 
     // Merge into strategy
     const prev = (conversation.strategy as any) || {};
+    // Prepare an optional text excerpt for inclusion in prompts (bounded length)
+    let textExcerpt: string | undefined;
+    try {
+      if (processed.fileType === 'pdf-base64' && processed.content) {
+        const text = await extractPdfTextFromBase64(processed.content, 4000).catch(() => '');
+        if (text) textExcerpt = text;
+      } else if ((processed.fileType === 'text/markdown' || processed.fileType === 'text/plain') && processed.content) {
+        // For text-like files, store a concise excerpt rather than entire file
+        const t = processed.content.trim();
+        textExcerpt = t.slice(0, 4000);
+      }
+    } catch (e) {
+      console.warn('Failed to derive text excerpt from upload:', e);
+    }
+
     const supplementaryFile = {
       name: processed.fileName,
       content: processed.content || '',
-      type: processed.fileType || ''
+      type: processed.fileType || '',
+      textExcerpt
     };
 
     const { prisma } = await import('@/lib/db');
@@ -58,7 +76,7 @@ export async function POST(
       content: `A new file was attached: ${processed.fileName}`
     });
 
-    return NextResponse.json({ success: true, file: processed, strategy: updated.strategy });
+  return NextResponse.json({ success: true, file: processed, strategy: updated.strategy });
   } catch (error) {
     console.error('Conversation upload error:', error);
     return NextResponse.json({ success: false, error: 'Failed to upload to conversation' }, { status: 500 });

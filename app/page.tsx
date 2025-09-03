@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Sparkles } from "lucide-react";
-=======
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Users, TrendingUp, Shield, Zap, Sparkles } from 'lucide-react';
->>>>>>> 9a3bd97 (Commit all recent changes)
 
 export default function HomePage() {
   return (
@@ -18,13 +11,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-2 mb-6">
               <Sparkles className="w-8 h-8 text-emerald-500" />
-<<<<<<< HEAD
-              <span className="text-emerald-600 font-medium">
-                AI-Powered Strategy Testing
-              </span>
-=======
               <span className="text-emerald-600 font-medium">Strategy Testing</span>
->>>>>>> 9a3bd97 (Commit all recent changes)
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Stress-Test Your
@@ -33,18 +20,10 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-<<<<<<< HEAD
-              Get realistic feedback from our animal-spirited AI board members
-              before your next investor meeting. Wisdom from the owl, creativity
-              from the peacock, and systems thinking from the beaver.
-            </p>
-            <Link
-=======
               Get realistic feedback from our animal-spirited virtual board members before your next investor meeting. 
               Wisdom from the owl, creativity from the peacock, and systems thinking from the beaver.
             </p>
             <Link 
->>>>>>> 9a3bd97 (Commit all recent changes)
               href="/strategy-input"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 hover:scale-105 shadow-lg"
             >
@@ -68,10 +47,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-<<<<<<< HEAD
-      {/* ...existing code for features and board members sections... */}
-=======
-
       {/* Features Section */}
       <div className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
@@ -287,7 +262,6 @@ export default function HomePage() {
           </Link>
         </div>
       </div>
->>>>>>> 9a3bd97 (Commit all recent changes)
     </div>
   );
 }

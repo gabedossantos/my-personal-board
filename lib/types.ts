@@ -9,7 +9,9 @@ export interface BusinessStrategy {
   supplementaryFile?: {
     name: string;
     content: string;
-    type: string;
+  type: string;
+  // Optional plain-text excerpt (e.g., extracted from PDF) to include in prompts
+  textExcerpt?: string;
   };
 }
 

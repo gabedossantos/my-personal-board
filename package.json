@@ -1,24 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "myboard",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@gabe/components": "*",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
-  },
-  "devDependencies": {
-    "@types/react": "18.2.66",
-    "@types/react-dom": "18.2.23"
-  }
-=======
   "name": "app",
   "private": true,
   "scripts": {
@@ -113,7 +93,11 @@
     "mapbox-gl": "1.13.3",
     "next": "14.2.32",
     "next-auth": "4.24.11",
-    "next-themes": "0.3.0",
+  "next-themes": "0.3.0",
+  "@napi-rs/canvas": "^0.1.78",
+  "tesseract.js": "^5.1.0",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.4.149",
     "plotly.js": "2.35.3",
     "react": "18.2.0",
     "react-chartjs-2": "5.3.0",
@@ -145,5 +129,4 @@
     "last 2 versions",
     "not dead"
   ]
->>>>>>> 9a3bd97 (Commit all recent changes)
 }

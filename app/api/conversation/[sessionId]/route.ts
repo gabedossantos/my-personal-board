@@ -42,6 +42,7 @@ export async function GET(
       animalSpirit: (msg.metadata as any)?.animalSpirit,
       mantra: (msg.metadata as any)?.mantra,
   providerUsed: (msg.metadata as any)?.providerUsed,
+      tokens: (msg.metadata as any)?.tokens,
       content: msg.content,
       timestamp: msg.createdAt.toISOString(),
       isComplete: msg.isComplete,

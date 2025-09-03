@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-// Local re-export shim to avoid referencing root lib directly within this app's tsconfig boundaries.
-export * from "../../../lib/file-processor";
-=======
-
 import mammoth from 'mammoth';
 
 export async function processFile(file: File): Promise<{
@@ -18,7 +13,7 @@ export async function processFile(file: File): Promise<{
   try {
     let content = '';
 
-  if (fileType === 'application/pdf') {
+    if (fileType === 'application/pdf') {
       // For PDF files, encode the document for server-side analysis
       const base64Buffer = await file.arrayBuffer();
       const base64String = Buffer.from(base64Buffer).toString('base64');
@@ -59,4 +54,3 @@ export async function processFile(file: File): Promise<{
     };
   }
 }
->>>>>>> 9a3bd97 (Commit all recent changes)

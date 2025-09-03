@@ -1,4 +1,3 @@
-
 import { NextRequest } from 'next/server';
 import { BusinessStrategy } from '@/lib/types';
 import { generateConversationResponsePrompt, generateBoardMemberPrompt, generateDirectAddressingPrompt, shouldIntroduceAdvisors, detectArtifactOpportunity, detectDirectAdvisorAddressing, detectMultiAdvisorRequest, BOARD_PERSONAS } from '@/lib/board-prompts';
@@ -160,8 +159,10 @@ export async function POST(request: NextRequest) {
     const personaMeta = BOARD_PERSONAS[respondingMember];
 
   // For simplicity, generate a single response and stream it chunked
-    const { content, provider } = await generateText({ messages: [{ role: 'user', content: prompt }], maxTokens: 350 });
-    fullResponse = content.trim();
+  const { content, provider } = await generateText({ messages: [{ role: 'user', content: prompt }], maxTokens: 350 });
+  fullResponse = content.trim();
+  const inputTokenEstimate = estimateTokens(prompt + '\n' + userMessage);
+  const outputTokenEstimate = estimateTokens(fullResponse);
 
     const payloads: string[] = [];
     // Chunk the response to simulate streaming
@@ -185,7 +186,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Persist the full message in DB
-        await ConversationDB.addMessage({
+    await ConversationDB.addMessage({
           conversationId: conversation.id,
           messageType: 'board_member',
           persona: respondingMember,
@@ -196,7 +197,8 @@ export async function POST(request: NextRequest) {
             animalSpirit: personaMeta.animalSpirit,
             mantra: personaMeta.mantra,
             isNewIntroduction: isNewAdvisorIntroduction,
-            providerUsed: provider
+      providerUsed: provider,
+      tokens: { input: inputTokenEstimate, output: outputTokenEstimate, total: inputTokenEstimate + outputTokenEstimate }
           }
         });
 
@@ -205,8 +207,8 @@ export async function POST(request: NextRequest) {
           conversationId: conversation.id,
           requestType: 'message',
           persona: respondingMember,
-          inputTokens: estimateTokens(prompt + '\n' + userMessage),
-          outputTokens: estimateTokens(fullResponse),
+          inputTokens: inputTokenEstimate,
+          outputTokens: outputTokenEstimate,
           cost: 0
         });
 
@@ -226,6 +228,8 @@ export async function POST(request: NextRequest) {
               const nextPrompt = generateConversationResponsePrompt(nextPersona, strategy, historyText, userMessage);
               const { content: c2, provider: p2 } = await generateText({ messages: [{ role: 'user', content: nextPrompt }], maxTokens: 350 });
               const text2 = c2.trim();
+              const in2 = estimateTokens(nextPrompt + '\n' + userMessage);
+              const out2 = estimateTokens(text2);
               const meta2 = BOARD_PERSONAS[nextPersona];
               await ConversationDB.addMessage({
                 conversationId: conversation.id,
@@ -237,15 +241,16 @@ export async function POST(request: NextRequest) {
                   title: meta2.title,
                   animalSpirit: meta2.animalSpirit,
                   mantra: meta2.mantra,
-                  providerUsed: p2
+                  providerUsed: p2,
+                  tokens: { input: in2, output: out2, total: in2 + out2 }
                 }
               });
               await ConversationDB.addTokenUsage({
                 conversationId: conversation.id,
                 requestType: 'message',
                 persona: nextPersona,
-                inputTokens: estimateTokens(nextPrompt + '\n' + userMessage),
-                outputTokens: estimateTokens(text2),
+                inputTokens: in2,
+                outputTokens: out2,
                 cost: 0
               });
             } catch (e) {
@@ -301,18 +306,14 @@ function determineResponder(userMessage: string, responseCount: number): 'cfo' |
 async function generateArtifactAsync(sessionId: string, artifactType: string, description: string) {
   try {
     console.log(`Triggering async artifact generation for session ${sessionId}`);
-    
-    // Make request to artifact generation endpoint
-    const response = await fetch(`/api/artifacts/generate`, {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const url = baseUrl.startsWith('http') ? `${baseUrl}/api/artifacts/generate` : `https://${baseUrl}/api/artifacts/generate`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        sessionId,
-        artifactType,
-        description
-      }),
+      body: JSON.stringify({ sessionId, artifactType, description }),
     });
 
     if (response.ok) {

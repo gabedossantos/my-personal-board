@@ -1,26 +1,13 @@
-<<<<<<< HEAD
-import { NextRequest, NextResponse } from "next/server";
-
-// Example: Replace with your actual logic
-export async function POST(_req: NextRequest) {
-  // Parse request body if needed
-  // const data = await req.json();
-
-  // Example response
-  return NextResponse.json(
-    { message: "Conversation started!" },
-    { status: 200 },
-  );
-=======
-
+// This file is server-only and should not be imported in edge or client contexts.
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { BusinessStrategy } from '@/lib/types';
 import { generateBoardMemberPrompt, BOARD_PERSONAS } from '@/lib/board-prompts';
 import { generateText } from '@/lib/text-generation';
 import ConversationDB from '@/lib/conversation-db';
 import { estimateTokens } from '@/lib/utils';
-
-export const dynamic = "force-dynamic";
+import { extractPdfTextFromBase64 } from '@/lib/pdf-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,11 +15,33 @@ export async function POST(request: NextRequest) {
     
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // If a supplementary file is present in initial strategy, ensure there's a concise text excerpt
+    let enrichedStrategy: BusinessStrategy = strategy;
+    try {
+      if (strategy?.supplementaryFile?.content && !strategy?.supplementaryFile?.textExcerpt) {
+        const sf = strategy.supplementaryFile;
+        if (sf.type === 'pdf-base64') {
+          const text = await extractPdfTextFromBase64(sf.content, 4000).catch(() => '');
+          if (text) {
+            enrichedStrategy = {
+              ...strategy,
+              supplementaryFile: { ...sf, textExcerpt: text }
+            };
+          }
+        } else if (sf.type === 'text/markdown' || sf.type === 'text/plain') {
+          const t = (sf.content || '').trim();
+          enrichedStrategy = { ...strategy, supplementaryFile: { ...sf, textExcerpt: t.slice(0, 4000) } };
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to derive excerpt on start:', e);
+    }
+
     // Create conversation in database
     const conversation = await ConversationDB.createConversation({
       sessionId,
-      strategy,
-      projectName: strategy.projectName || 'Untitled Project'
+      strategy: enrichedStrategy,
+      projectName: enrichedStrategy.projectName || 'Untitled Project'
     });
 
     // Add initial system message
@@ -50,9 +59,10 @@ export async function POST(request: NextRequest) {
 
     // Generate CFO greeting only (local generator)
     try {
-    const persona = BOARD_PERSONAS.cfo;
-    const prompt = generateBoardMemberPrompt('cfo', strategy);
-    const { content, provider } = await generateText({ messages: [{ role: 'user', content: prompt }], maxTokens: 300 });
+      const persona = BOARD_PERSONAS.cfo;
+  const prompt = generateBoardMemberPrompt('cfo', enrichedStrategy);
+      const { content, provider } = await generateText({ messages: [{ role: 'user', content: prompt }], maxTokens: 300 });
+      const outputTokenEstimate = estimateTokens(content.trim());
       await ConversationDB.addMessage({
         conversationId: conversation.id,
         messageType: 'board_member',
@@ -62,8 +72,13 @@ export async function POST(request: NextRequest) {
           name: persona.name,
           title: persona.title,
           animalSpirit: persona.animalSpirit,
-      mantra: persona.mantra,
-      providerUsed: provider
+          mantra: persona.mantra,
+          providerUsed: provider,
+          tokens: {
+            input: estimateTokens(prompt),
+            output: outputTokenEstimate,
+            total: estimateTokens(prompt) + outputTokenEstimate
+          }
         }
       });
 
@@ -73,24 +88,30 @@ export async function POST(request: NextRequest) {
         requestType: 'initial_greeting',
         persona: 'cfo',
         inputTokens: estimateTokens(prompt),
-        outputTokens: estimateTokens(content.trim()),
-  cost: 0
+        outputTokens: outputTokenEstimate,
+        cost: 0
       });
     } catch (memberError) {
       console.error('Error generating CFO response:', memberError);
       
       // Add fallback message
       const persona = BOARD_PERSONAS.cfo;
+      const fbText = `Hello! I'm ${persona.name}, your ${persona.title}. I'm excited to discuss your business strategy! Could you start by telling me about the core problem or opportunity you're addressing?`;
       await ConversationDB.addMessage({
         conversationId: conversation.id,
         messageType: 'board_member',
         persona: 'cfo',
-        content: `Hello! I'm ${persona.name}, your ${persona.title}. I'm excited to discuss your business strategy! Could you start by telling me about the core problem or opportunity you're addressing?`,
+        content: fbText,
         metadata: {
           name: persona.name,
           title: persona.title,
           animalSpirit: persona.animalSpirit,
-          mantra: persona.mantra
+          mantra: persona.mantra,
+          tokens: {
+            input: 0,
+            output: estimateTokens(fbText),
+            total: estimateTokens(fbText)
+          }
         }
       });
 
@@ -100,14 +121,12 @@ export async function POST(request: NextRequest) {
         requestType: 'initial_greeting',
         persona: 'cfo',
         inputTokens: 0,
-        outputTokens: estimateTokens(
-          `Hello! I'm ${persona.name}, your ${persona.title}. I'm excited to discuss your business strategy! Could you start by telling me about the core problem or opportunity you're addressing?`
-        ),
+  outputTokens: estimateTokens(fbText),
         cost: 0
       });
     }
 
-  // Fetch the complete conversation with messages
+    // Fetch the complete conversation with messages
     const completeConversation = await ConversationDB.getConversationBySessionId(sessionId);
 
     if (!completeConversation) {
@@ -131,6 +150,7 @@ export async function POST(request: NextRequest) {
           persona: msg.persona,
           name: (msg.metadata as any)?.name,
           title: (msg.metadata as any)?.title,
+          tokens: (msg.metadata as any)?.tokens,
           content: msg.content,
           timestamp: msg.createdAt.toISOString(),
           isComplete: msg.isComplete
@@ -159,5 +179,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
->>>>>>> 9a3bd97 (Commit all recent changes)
 }

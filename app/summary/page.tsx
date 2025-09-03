@@ -35,6 +35,13 @@ export default function SummaryPage() {
     try {
       const parsedConversation = JSON.parse(conversationData) as ConversationSession;
       setConversation(parsedConversation);
+      // Also refetch the latest conversation with server stats to avoid stale counts
+      fetch(`/api/conversation/${parsedConversation.sessionId}`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.success && data.conversation) setConversation(data.conversation);
+        })
+        .catch(() => {});
       generateExecutiveSummary(parsedConversation);
     } catch (error) {
       console.error('Error parsing conversation data:', error);
@@ -98,19 +105,15 @@ export default function SummaryPage() {
     return null; // Router will redirect
   }
 
-  const getConversationStats = () => {
-    const userMessages = conversation.messages.filter(msg => msg.type === 'user').length;
-    const boardMessages = conversation.messages.filter(msg => msg.type === 'board_member').length;
-    const participatingMembers = new Set(
+  const conversationStats = {
+    userMessages: conversation.messages.filter(msg => msg.type === 'user').length,
+    boardMessages: conversation.messages.filter(msg => msg.type === 'board_member').length,
+    participatingMembers: new Set(
       conversation.messages
         .filter(msg => msg.type === 'board_member')
         .map(msg => msg.persona)
-    ).size;
-    
-    return { userMessages, boardMessages, participatingMembers };
+    ).size,
   };
-
-  const conversationStats = getConversationStats();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
@@ -311,7 +314,7 @@ export default function SummaryPage() {
           </Link>
           
           <Link 
-            href="/simulation"
+            href={conversation?.sessionId ? `/conversation/${conversation.sessionId}` : '/simulation'}
             className="inline-flex items-center justify-center gap-2 px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
           >
             <MessageSquare className="w-5 h-5" />
