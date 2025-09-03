@@ -151,7 +151,6 @@ npm start
 ## Notes
 - Secrets are not committed. Use `.env` locally; `.env.example` shows required variables.
 - The app uses a local text/JSON generator (`lib/text-generation.ts`) for development.
-- No references to OpenAI/Copilot/LLM/Abacus remain.
 - Package manager: npm only.
 
 ### Prisma / Migrations
